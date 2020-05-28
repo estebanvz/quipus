@@ -3,16 +3,16 @@ import networkx as nx
 
 
 def drawGraph(g):
-    plt.figure("Graph", figsize=(6, 6))
+    plt.figure("Graph", figsize=(12, 12))
     pos = nx.spring_layout(g)
     color_group = g.graph["colors"]
-    classes = g.graph["classNames"]
+    classNames = g.graph["classNames"]
     node_color = []
     edge_color = []
     # print("CLASES:", classes)
     for node, label in g.nodes(data="label"):
         if(g.nodes[node]["typeNode"] == "net"):
-            node_color.append(color_group[classes.index(label)])
+            node_color.append(color_group[classNames.index(label)])
         if(g.nodes[node]["typeNode"] == "opt"):
             node_color.append("#000000")
     for node_a, node_b, color in g.edges.data("color", default="#9db4c0"):
@@ -33,5 +33,5 @@ def drawGraph(g):
     #         node_color[index]='black'
     # nx.draw(g,node_size=200)
     nx.draw(g, pos, node_color=node_color,
-            edge_color=edge_color, width=1.3,node_size=200,with_labels=True)
+            edge_color=edge_color, width=1.3,node_size=150,with_labels=True)
     plt.show()

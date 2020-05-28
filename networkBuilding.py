@@ -2,7 +2,7 @@ import networkx as nx
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
-def networkBuildKnn(X_net,Y_net,knn,eQuartile=0.5,labels=False, colors=["#a8201a" ,"#46acc2", "#47a64e", "#99582a", "#d81159"]):
+def networkBuildKnn(X_net,Y_net,knn,eQuartile=0.5,labels=False, colors=["#a8201a" ,"#46acc2", "#47a64e", "#99582a", "#d81159","#e8e4e1","#e8e4e1"]):
     g=nx.Graph()
     lnNet=len(X_net)
     g.graph["lnNet"]=lnNet
@@ -42,17 +42,23 @@ def insertNode(g,nbrs,instance,label="?",colors=["#bb9457"]):
     nodeIndex=g.graph["index"]
     g.graph["index"]+=1
     g.add_node(str(nodeIndex), value=instance ,typeNode='opt',label=label)
-
+    colors=g.graph["colors"]
+    classNames=g.graph["classNames"]
+    if(label=="?"):
+        color=colors[0]
+    else:
+        color=colors[classNames.index(label)]
+    
     if(isinstance(instance,(int,float,str))):
         instance=[instance]
 
     distances,indices = nbrs.kneighbors([instance])
     for indiceNode,indicesNode in enumerate(indices):
         for tmpi, indice in enumerate(indicesNode):
-            g.add_edge(str(indice),str(nodeIndex),weight=distances[indiceNode][tmpi],color=colors[0])
+            g.add_edge(str(indice),str(nodeIndex),weight=distances[indiceNode][tmpi],color=color)
 
     distances,indices = nbrs.radius_neighbors([instance])
     for indiceNode,indicesNode in enumerate(indices):
         for tmpi, indice in enumerate(indicesNode):
             if(not str(indice)==str(indiceNode)):
-                g.add_edge(str(indice),str(nodeIndex),weight=distances[indiceNode][tmpi],color=colors[0])
+                g.add_edge(str(indice),str(nodeIndex),weight=distances[indiceNode][tmpi],color=color)

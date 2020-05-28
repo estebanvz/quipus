@@ -24,31 +24,35 @@ def getDataCSV(url, className="Class"):
 
 
 # %%
-dataset = getDataCSV("./dataset/iris.csv")
+dataset = getDataCSV("./dataset/redwine.csv")
 X_train, X_predict, Y_train, Y_predict = train_test_split(
-    dataset['data'], dataset["target"], test_size=0.7)
+    dataset['data'], dataset["target"], test_size=0.8)
 (X_train, X_predict) = norm.preprocess(X_train, X_predict)
 
 # %%
 g, nbrs = nBuilding.networkBuildKnn(
-    X_train, Y_train, knn=3, eQuartile=0.50, labels=True)
+    X_train, Y_train, knn=11, eQuartile=0.50, labels=True)
 # draw.drawGraph(g)
 nBuilding.insertNode(g, nbrs, X_train[0], Y_train[0])
-draw.drawGraph(g)
+# draw.drawGraph(g)
 
-def _nNeighbors(g,index,deep,result):
+def _nNeighbors(g,index,label,deep,result):
     if(deep==0):
         result.append(index)
         return
     index = str(index)
     neighbors = list(nx.neighbors(g, index))
+    colors=g.graph["colors"]
+    classNames=g.graph["classNames"]
     for node in neighbors:
-        g.edges[str(index),str(node)]["color"]="#bb9457"
-        _nNeighbors(g,node,deep-1,result)
+        color=colors[classNames.index(label)]
+        g.edges[str(index),str(node)]["color"]=color
+        _nNeighbors(g,node,label,deep-1,result)
 
 def nNeighbors(g,index,deep):
     result = []
-    _nNeighbors(g,index,deep,result)
+    label=g.nodes()[str(index)]["label"]
+    _nNeighbors(g,index,label,deep,result)
     result=list(set(result))
     return result
 # def secondNeighbors(g, index):
@@ -65,8 +69,14 @@ def nNeighbors(g,index,deep):
 #     print("secondNeighbors: ",sNeighbors)
 # secondNeighbors(g, g.graph["lnNet"])
 
-neighbors=nNeighbors(g, g.graph["lnNet"],3)
+neighbors=nNeighbors(g, g.graph["lnNet"],2)
 print("neighbors: ",neighbors)
-draw.drawGraph(g)
+# draw.drawGraph(g)
+g1=g.copy()
+for node in g.nodes():
+    if(not node in neighbors):
+        g1.remove_node(node)
+print(Y_train[0], g.graph["colors"][Y_train[0]] )
+draw.drawGraph(g1)
 
 # %%
