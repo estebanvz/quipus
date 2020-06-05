@@ -40,7 +40,7 @@ def networkBuildKnn(X_net,Y_net,knn,eQuartile=0.5,labels=False, colors=["#a8201a
 
 def insertNode(g,nbrs,instance,label="?",colors=["#bb9457"]):
     nodeIndex=g.graph["index"]
-    g.graph["index"]+=1
+    # g.graph["index"]+=1
     g.add_node(str(nodeIndex), value=instance ,typeNode='opt',label=label)
     colors=g.graph["colors"]
     classNames=g.graph["classNames"]

@@ -2,8 +2,9 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
-def drawGraph(g):
+def drawGraph(g,title="Graph"):
     plt.figure("Graph", figsize=(12, 12))
+    plt.title(title)
     pos = nx.spring_layout(g)
     color_group = g.graph["colors"]
     classNames = g.graph["classNames"]
