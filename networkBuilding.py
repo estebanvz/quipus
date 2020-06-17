@@ -8,8 +8,15 @@ def networkBuildKnn(X_net,Y_net,knn,eQuartile=0.5,labels=False, colors=["#a8201a
     g.graph["lnNet"]=lnNet
     g.graph["classNames"]=list(set(Y_net))
     g.graph["colors"]=colors
+    classNodes=[[] for i in g.graph["classNames"]]
+
     for index,instance in enumerate(X_net):
-        g.add_node(str(index), value=instance ,typeNode='net',label=Y_net[index])
+        label=Y_net[index]
+        indexLabel=g.graph["classNames"].index(label)
+        classNodes[indexLabel].append(str(index))
+        g.add_node(str(index), value=instance ,typeNode='net',label=label)
+    g.graph["classNodes"]=classNodes
+
     values=X_net
     
     if(isinstance(values[0],(int,float,str))):

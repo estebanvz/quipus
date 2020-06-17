@@ -34,7 +34,7 @@ class Quipus:
             # draw.drawGraph(g)
             tmpResults = predict.prediction(g,indexNode,self.deepNeighbors)
             results.append(tmpResults)
-            maxIndex=np.argmin(tmpResults)
+            maxIndex=np.argmax(tmpResults)
             newLabel=g.graph["classNames"][maxIndex]
             result.append(newLabel)
             # g.remove_node(str(indexNode))
@@ -98,7 +98,7 @@ X_train, X_predict, Y_train, Y_predict = train_test_split(
 (X_train, X_predict) = norm.preprocess(X_train, X_predict)
 #%%
 
-# quipusClass=Quipus(knn=10,eRadius=0.1,deepNeighbors=1)
+# quipusClass=Quipus(knn=10,eRadius=0.5,deepNeighbors=1)
 # quipusClass.fit(X_train,Y_train)
 # quipusClass.predict(X_predict,Y_predict)
 # []
@@ -107,8 +107,8 @@ X_train, X_predict, Y_train, Y_predict = train_test_split(
 # red Wine:3 deep 1 0.574
 # f=open("results.txt",'w')
 # f.close()
-# grid_values = {'knn':range(1,20),'eRadius':[0.1,0.2,0.3,0.4,0.5]}
-# kfold = KFold(n_splits=10, random_state=None, shuffle=True)
+# grid_values = {'knn':range(1,20),'eRadius':[0.0,0.25,0.5]}
+# kfold = KFold(n_splits=5, random_state=None, shuffle=True)
 # uruClass=Quipus()
 # clf = GridSearchCV(uruClass, param_grid = grid_values,cv=kfold,scoring = 'accuracy',n_jobs=7)
 # grid_result=clf.fit(X_train, Y_train)
@@ -120,7 +120,7 @@ X_train, X_predict, Y_train, Y_predict = train_test_split(
 test=10
 total=[]
 for i in range(test):
-    quipusClass=Quipus(knn=10,eRadius=0.3,deepNeighbors=1)
+    quipusClass=Quipus(knn=9,eRadius=0.5,deepNeighbors=2)
     kfold = KFold(n_splits=10, random_state=None, shuffle=True)
     scores = cross_val_score(quipusClass,dataset['data'],dataset['target'],scoring="accuracy",cv=kfold)
     total.append(scores)

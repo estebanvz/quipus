@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import networkx as nx
 import warnings
 warnings.filterwarnings("ignore")
@@ -84,56 +85,58 @@ def prediction(g,index,deep=1):
     classNames = g.graph["classNames"]
     currentRWB=[]
     insertionRWB=[]
-    lens=[]
-    for className in classNames:
-        classNodes=[ e for e in  g.nodes if g.nodes[e]["label"]==className and e!= index]
+    result=[]
+    nlinks=[]
+    for indexClassName, _ in enumerate(classNames):
+        classNodes = g.graph["classNodes"][indexClassName]
         classNodes.append(index)
-        classG = g.subgraph(classNodes)
+        subG = g.subgraph(classNodes)
+        neighbors = list(nx.single_source_shortest_path_length(subG, index, cutoff=deep))
 
-        # neighbors=nNeighbors(classG,index,deep)
-        neighbors=firstNeighbors(classG,index)
-        # rootNN=np.array(neighbors)
+        # neighbors.remove(index)
+        # subG = g.subgraph(neighbors)
+
+
+        # # rwbListB={}
+        # # if(not nx.is_empty(subG) and nx.is_connected(subG) and len(neighbors)>2):
+        # #     rwbListB=nx.current_flow_betweenness_centrality(subG)
+
+        # neighbors.append(index)
+        
         subG = g.subgraph(neighbors)
-        # draw.drawGraph(subG,"Pre insert class:"+str(className))
-        subG=connected(subG)
-        if(len(subG.nodes)>2 and len(subG.edges)>1):
-        # if(len(neighbors)!=0 and len(neighbors)!=1):
-            rwbList=nx.current_flow_betweenness_centrality(subG)
-            tmp=0
-            for element in rwbList:
-                if np.isnan(rwbList[element]):
-                    continue
-                if rwbList[element] :
-                    tmp+= rwbList[element]
-            currentRWB.append(tmp/len(neighbors))
+        rwbListA={}
+        nlinks.append(len(neighbors)-1)
+        if(len(neighbors)>3):
+            rwbListA=nx.current_flow_betweenness_centrality(subG)
+        if(len(rwbListA)<=3):
+            result.append(1)
         else:
-            currentRWB.append(0)
-        # tmpN=list(nx.neighbors(classG,index))
-        classTMPG = g.subgraph(classNodes)
+            currentRWB=rwbListA[index]
+            tmp=0
+            for key in rwbListA:
+                tmp=tmp+abs(rwbListA[key]-currentRWB)
+            tmp/=len(rwbListA)
+            if(tmp==0):
+                tmp=1.
+            result.append(tmp)
+
+    # result= abs(np.subtract(currentRWB,insertionRWB))
+    resultT=result
+    tnlinks=nlinks
+    result = 1/np.array(result)
+    result = np.array(result)/sum(result)
+    nlinks =np.array(nlinks)
+    nlinks = (nlinks/sum(nlinks))
+    # nlinks = 1 - nlinks
+    resultFinal = (result*0.6+nlinks*0.4)
+    resultFinal = resultFinal/sum(resultFinal)
+    
+    indexMin=np.argmax(resultFinal)
+    tmpLabel=g.nodes[index]["label"]
+    classifyLabel=classNames[indexMin]
+    if(not tmpLabel=='?' and tmpLabel!=classifyLabel):
+        neighbors = list(nx.single_source_shortest_path_length(g, index, cutoff=deep))
         neighbors.append(index)
-        lens.append(len(neighbors))
         subG = g.subgraph(neighbors)
-        if(len(neighbors)>2):
-            rwbList=nx.current_flow_betweenness_centrality(subG)
-            tmp=0
-            for element in rwbList:
-                if np.isnan(rwbList[element]):
-                    tmp+=1
-                else:
-                    tmp+= rwbList[element]
-            insertionRWB.append(tmp/len(neighbors))
-        else:
-            insertionRWB.append(1)
-    result= abs(np.subtract(currentRWB,insertionRWB))
-    lensNorm= np.array(lens)/np.sum(lens)
-    resultFinal = result / lensNorm
-
-    # indexMin=np.argmin(resultFinal)
-    # tmpLabel=g.nodes[index]["label"]
-    # correctLabel=classNames[indexMin]
-    # if(tmpLabel!=correctLabel):
-    #     neighbors=nNeighbors(g,index,deep)
-    #     neighbors.append(index)
-    #     subG = g.subgraph(neighbors)
-    #     draw.drawGraph(subG,"Pre insert class predicted:"+str(classNames[indexMin])+" REAL: "+str(g.nodes[index]["label"]))
+        draw.drawGraph(subG,"Pre insert class predicted:"+str(classNames[indexMin])+" "+str(resultFinal)+" REAL: "+str(g.nodes[index]["label"]))
     return resultFinal
