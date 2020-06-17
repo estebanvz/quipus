@@ -29,6 +29,9 @@ def nNeighbors(g,index,deep):
         result.remove(str(index))
     result=list(set(result))
     return result
+def firstNeighbors(g,index):
+    result = nx.neighbors(g,index)
+    return list(set(result))
 def subGraph(g,nodes):
     g1=g.copy()
     for node in g.nodes():
@@ -56,6 +59,7 @@ def predictionBetweetness(g,index,deep=1):
     index=str(index)
     classNames = g.graph["classNames"]
     neighbors=nNeighbors(g,index,deep)
+    # neighbors=firstNeighbors(g,index)
     neighbors.append(str(index))
     subG=subGraph(g,neighbors)
     evaluationResults, classSubGraphs=classSubGraph(subG,nx.betweenness_centrality)
@@ -86,7 +90,8 @@ def prediction(g,index,deep=1):
         classNodes.append(index)
         classG = g.subgraph(classNodes)
 
-        neighbors=nNeighbors(classG,index,deep)
+        # neighbors=nNeighbors(classG,index,deep)
+        neighbors=firstNeighbors(classG,index)
         # rootNN=np.array(neighbors)
         subG = g.subgraph(neighbors)
         # draw.drawGraph(subG,"Pre insert class:"+str(className))
@@ -123,9 +128,12 @@ def prediction(g,index,deep=1):
     lensNorm= np.array(lens)/np.sum(lens)
     resultFinal = result / lensNorm
 
-    # indexMin=np.argmin(result)
-    # if(g.nodes[index]["label"]!=classNames[indexMin]):
+    # indexMin=np.argmin(resultFinal)
+    # tmpLabel=g.nodes[index]["label"]
+    # correctLabel=classNames[indexMin]
+    # if(tmpLabel!=correctLabel):
     #     neighbors=nNeighbors(g,index,deep)
+    #     neighbors.append(index)
     #     subG = g.subgraph(neighbors)
     #     draw.drawGraph(subG,"Pre insert class predicted:"+str(classNames[indexMin])+" REAL: "+str(g.nodes[index]["label"]))
     return resultFinal

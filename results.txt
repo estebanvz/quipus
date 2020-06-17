@@ -1,1 +1,3 @@
 Best Estimator: {'knn': 7, 'eRadius': 0.5, 'deepNeighbors': 1} Score: 0.5843931475029036
+Best Estimator: {'knn': 9, 'eRadius': 0.5, 'deepNeighbors': 1} Score: 0.9703703703703702
+Best Estimator: {'knn': 9, 'eRadius': 0.1, 'deepNeighbors': 1} Score: 0.9777777777777776
