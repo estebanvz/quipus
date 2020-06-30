@@ -73,25 +73,26 @@ def predictionBetweetness(g,index,deep=1):
         for element in evaluationResults:
             result.append(len(element))
     return result
-def connected(g):
+def connected(g,index):
     if(nx.is_empty(g) or nx.is_connected(g)):
         return g
     else:
-        largest_cc = max(nx.connected_components(g), key=len)
+        # largest_cc = max(nx.connected_components(g), key=len)
+        for component in nx.connected_components(g):
+            if index in component:
+                largest_cc=component
         subG = g.subgraph(largest_cc)
         return subG 
-def prediction(g,index,deep=1):
+def prediction(g,index,deep=1, b=8):
     index = str(index)
     classNames = g.graph["classNames"]
-    currentRWB=[]
-    insertionRWB=[]
     result=[]
     nlinks=[]
     for indexClassName, _ in enumerate(classNames):
-        classNodes = g.graph["classNodes"][indexClassName]
+        classNodes =[e for e in g.graph["classNodes"][indexClassName]]
         classNodes.append(index)
         subG = g.subgraph(classNodes)
-        neighbors = list(nx.single_source_shortest_path_length(subG, index, cutoff=deep))
+        # neighbors = list(nx.single_source_shortest_path_length(subG, index, cutoff=deep))
 
         # neighbors.remove(index)
         # subG = g.subgraph(neighbors)
@@ -103,40 +104,58 @@ def prediction(g,index,deep=1):
 
         # neighbors.append(index)
         
-        subG = g.subgraph(neighbors)
+        # subG = g.subgraph(neighbors)
+        lenNN=len(list(subG.neighbors(index)))
+        nlinks.append(lenNN)
+        subG=connected(subG,index)
         rwbListA={}
-        nlinks.append(len(neighbors)-1)
-        if(len(neighbors)>3):
-            rwbListA=nx.current_flow_betweenness_centrality(subG)
-        if(len(rwbListA)<=3):
-            result.append(1)
+        if(len(classNodes)>3 and lenNN>3):
+            # rwbListA=nx.betweenness_centrality(subG,k=int(len(g.nodes())*0.2))
+            if(not nx.is_connected(subG)):
+                draw.drawGraph(subG)
+            # rwbListA=nx.current_flow_closeness_centrality(subG)
+            rwbListA=nx.betweenness_centrality(subG,k=b)
+        if(len(classNodes)<=3 or lenNN<=3):
+            if(lenNN==0):
+                result.append(1)
+            else:
+                result.append(None)
         else:
             currentRWB=rwbListA[index]
-            tmp=0
+            # g.nodes()[key]['betweenness']=currentRWB
+            tmp=[]
             for key in rwbListA:
-                tmp=tmp+abs(rwbListA[key]-currentRWB)
-            tmp/=len(rwbListA)
-            if(tmp==0):
-                tmp=1.
-            result.append(tmp)
+                tmp.append(abs(rwbListA[key]-currentRWB))
+            tmp.sort()
+            tmp=tmp[:b]
+            result.append(sum(tmp)/len(tmp))
 
-    # result= abs(np.subtract(currentRWB,insertionRWB))
-    resultT=result
+    resultT=[e for e in result]
     tnlinks=nlinks
-    result = 1/np.array(result)
-    result = np.array(result)/sum(result)
+    for indexResult, e in enumerate(result):
+        if(e==None):
+            result[indexResult]=1.0
+
     nlinks =np.array(nlinks)
     nlinks = (nlinks/sum(nlinks))
+    result = 1-((np.array(result)))
+    result = np.array(result)/sum(result+1.0e-16)
     # nlinks = 1 - nlinks
-    resultFinal = (result*0.6+nlinks*0.4)
-    resultFinal = resultFinal/sum(resultFinal)
-    
-    indexMin=np.argmax(resultFinal)
-    tmpLabel=g.nodes[index]["label"]
-    classifyLabel=classNames[indexMin]
-    if(not tmpLabel=='?' and tmpLabel!=classifyLabel):
-        neighbors = list(nx.single_source_shortest_path_length(g, index, cutoff=deep))
-        neighbors.append(index)
-        subG = g.subgraph(neighbors)
-        draw.drawGraph(subG,"Pre insert class predicted:"+str(classNames[indexMin])+" "+str(resultFinal)+" REAL: "+str(g.nodes[index]["label"]))
+    for indexResult,e in enumerate(resultT):
+        if(e==None):
+            result[indexResult]=nlinks[indexResult]
+
+    # resultFinal = (result+nlinks)/2
+    # resultFinal = resultFinal/sum(resultFinal)
+    resultFinal = result
+
+    # indexMin=np.argmax(resultFinal)
+    # tmpLabel=g.nodes[index]["label"]
+    # classifyLabel=classNames[indexMin]
+    # if(not tmpLabel=='?' and tmpLabel!=classifyLabel):
+    #     neighbors = list(nx.single_source_shortest_path_length(g, index, cutoff=deep))
+    #     neighbors.append(index)
+    #     subG = g.subgraph(neighbors)
+    #     # draw.drawGraph(subG,"Pre insert class predicted:"+str(classNames[indexMin])+" "+str(np.round(resultFinal,4))+" REAL: "+str(g.nodes[index]["label"]))
+    #     draw.drawGraph(subG,"Wrong Classification")
     return resultFinal

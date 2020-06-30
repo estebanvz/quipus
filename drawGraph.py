@@ -5,7 +5,7 @@ import networkx as nx
 def drawGraph(g,title="Graph"):
     plt.figure("Graph", figsize=(12, 12))
     plt.title(title)
-    pos = nx.spring_layout(g)
+    pos = nx.spring_layout(g,iterations=100)
     color_group = g.graph["colors"]
     classNames = g.graph["classNames"]
     node_color = []
@@ -34,5 +34,5 @@ def drawGraph(g,title="Graph"):
     #         node_color[index]='black'
     # nx.draw(g,node_size=200)
     nx.draw(g, pos, node_color=node_color,
-            edge_color=edge_color, width=1.3,node_size=150,with_labels=True)
+            edge_color=edge_color, width=1.3,node_size=150,with_labels=False)
     plt.show()
