@@ -37,7 +37,7 @@ class Quipus:
             else:    
                 nBuilding.insertNode(g,nbrs,instance,Y_test[index])
             # draw.drawGraph(g,"New Dark Node Inserted")
-            tmpResults = predict.prediction(g,indexNode,self.deepNeighbors)
+            tmpResults = predict.prediction(g,indexNode,self.bnn,self.deepNeighbors)
             results.append(tmpResults)
             maxIndex=np.argmax(tmpResults)
             newLabel=g.graph["classNames"][maxIndex]
@@ -75,13 +75,15 @@ class Quipus:
         self.Y_train = Y_train
         self.partitionOptimization = 0.5
 
-    def __init__(self, knn=3, eRadius=0.5, deepNeighbors=1):
+    def __init__(self, knn=3, eRadius=0.5,bnn=3,alpha=1.0, deepNeighbors=1):
         self.knn = knn
+        self.bnn = bnn
+        self.alpha = alpha
         self.eRadius = eRadius
         self.deepNeighbors = deepNeighbors
 
     def get_params(self, deep=False):
-        return {'knn': self.knn, 'eRadius': self.eRadius, 'deepNeighbors': self.deepNeighbors}
+        return {'knn': self.knn, 'eRadius': self.eRadius, "bnn":self.bnn, "alpha":self.alpha, 'deepNeighbors': self.deepNeighbors}
 
     def set_params(self, **parameters):
         for parameter, value in parameters.items():
@@ -96,126 +98,144 @@ def getDataCSV(url, className="Class"):
     dataset['data'] = data.drop(className, axis=1).values
     return dataset
 
-#%%
-dataset = getDataCSV("./dataset/irisN.csv")
+# #%%
+dataset = getDataCSV("~/circle25N.csv")
 X_train, X_predict, Y_train, Y_predict = train_test_split(
     dataset['data'], dataset["target"], test_size=0.20)
 # (X_train, X_predict) = norm.preprocess(X_train, X_predict,1)
 #%%
 
-from sklearn.datasets import make_classification
-X, y = make_classification(n_informative=2,
-                             n_clusters_per_class=1, n_classes=4)
-df = pd.DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
-colors = {0:'red', 1:'blue', 2:'green'}
-fig, ax =plt.subplots()
-grouped = df.groupby('label')
-for key, group in grouped:
-    group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colors[key])
-plt.show()
+# from sklearn.datasets import make_classification
+# X, y = make_classification(n_informative=2,
+#                              n_clusters_per_class=1, n_classes=3)
+# df = pd.DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
+# colors = {0:'red', 1:'blue', 2:'green'}
+# fig, ax =plt.subplots()
+# grouped = df.groupby('label')
+# for key, group in grouped:
+#     group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colors[key])
+# plt.show()
 
-X_train, X_predict, Y_train, Y_predict = train_test_split(
-    X, y, test_size=0.20)
-
-quipusClass=Quipus(knn=5,eRadius=0.5,deepNeighbors=4)
-quipusClass.fit(X_train,Y_train)
-quipusClass.predict(X_predict,Y_predict)
-
-#%%
-from sklearn.datasets import make_blobs
-X, y = make_blobs(n_samples=100, centers=3, n_features=5)
-df = pd.DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
-colors = {0:'red', 1:'blue', 2:'green'}
-fig, ax =plt.subplots()
-grouped = df.groupby('label')
-for key, group in grouped:
-    group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colors[key])
-plt.show()
-
-X_train, X_predict, Y_train, Y_predict = train_test_split(
-    X, y, test_size=0.20)
-
-quipusClass=Quipus(knn=5,eRadius=0.5,deepNeighbors=4)
-quipusClass.fit(X_train,Y_train)
-quipusClass.predict(X_predict,Y_predict)
-#%%
-from sklearn.datasets import make_moons
-X, y = make_moons(n_samples=100, noise=0.0)
-df = pd.DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
-colors = {0:'red', 1:'blue', 2:'green'}
-fig, ax =plt.subplots()
-grouped = df.groupby('label')
-for key, group in grouped:
-    group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colors[key])
-plt.show()
-
-X_train, X_predict, Y_train, Y_predict = train_test_split(
-    X, y, test_size=0.20)
-
-quipusClass=Quipus(knn=5,eRadius=0.5,deepNeighbors=4)
-quipusClass.fit(X_train,Y_train)
-quipusClass.predict(X_predict,Y_predict)
-#%%
-
-from sklearn.datasets import make_circles
-X, y = make_circles(n_samples=100, noise=0.25)
-df = pd.DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
-colors = {0:'red', 1:'blue', 2:'green'}
-fig, ax =plt.subplots()
-grouped = df.groupby('label')
-for key, group in grouped:
-    group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colors[key])
-plt.show()
-
-X_train, X_predict, Y_train, Y_predict = train_test_split(
-    X, y, test_size=0.20)
-
-quipusClass=Quipus(knn=3,eRadius=0.5,deepNeighbors=1)
-quipusClass.fit(X_train,Y_train)
-quipusClass.predict(X_predict,Y_predict)
-
-#%%
+# X_train, X_predict, Y_train, Y_predict = train_test_split(
+#     X, y, test_size=0.20)
 
 # quipusClass=Quipus(knn=5,eRadius=0.5,deepNeighbors=4)
 # quipusClass.fit(X_train,Y_train)
 # quipusClass.predict(X_predict,Y_predict)
 
+# #%%
+# from sklearn.datasets import make_blobs
+# X, y = make_blobs(n_samples=100, centers=3, n_features=5)
+# df = pd.DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
+# colors = {0:'red', 1:'blue', 2:'green'}
+# fig, ax =plt.subplots()
+# grouped = df.groupby('label')
+# for key, group in grouped:
+#     group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colors[key])
+# plt.show()
 
-# []
-# IRIS knn:7 deep 1
-#IRIS 14/16
-# wine knn:19 deep 1
-# red Wine:3 deep 1 0.574
-# f=open("results.txt",'w')
-# f.close()
+# X_train, X_predict, Y_train, Y_predict = train_test_split(
+#     X, y, test_size=0.20)
 
-# grid_values = {'knn':range(1,20),'eRadius':[0.0,0.25,0.5]}
-# kfold = KFold(n_splits=10)
+# quipusClass=Quipus(knn=5,eRadius=0.5,deepNeighbors=4)
+# quipusClass.fit(X_train,Y_train)
+# quipusClass.predict(X_predict,Y_predict)
+# #%%
+# from sklearn.datasets import make_moons
+# X, y = make_moons(n_samples=100, noise=0.0)
+# df = pd.DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
+# colors = {0:'red', 1:'blue', 2:'green'}
+# fig, ax =plt.subplots()
+# grouped = df.groupby('label')
+# for key, group in grouped:
+#     group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colors[key])
+# plt.show()
+
+# X_train, X_predict, Y_train, Y_predict = train_test_split(
+#     X, y, test_size=0.20)
+
+# quipusClass=Quipus(knn=5,eRadius=0.5,deepNeighbors=4)
+# quipusClass.fit(X_train,Y_train)
+# quipusClass.predict(X_predict,Y_predict)
+#%%
+
+from sklearn.datasets import make_circles
+from sklearn.datasets import make_moons
+X, y = make_circles(n_samples=100, noise=0.0)
+np.savetxt("circle.csv", np.insert(X,2,y,axis=1), delimiter=",")
+X, y = make_circles(n_samples=100, noise=0.25)
+np.savetxt("circle25.csv", np.insert(X,2,y,axis=1), delimiter=",")
+X, y = make_moons(n_samples=100, noise=0.0)
+np.savetxt("moon0.csv", np.insert(X,2,y,axis=1), delimiter=",")
+X, y = make_moons(n_samples=100, noise=0.25)
+np.savetxt("moon25.csv", np.insert(X,2,y,axis=1), delimiter=",")
+#%%
+# from sklearn.datasets import make_circles
+# X, y = make_circles(n_samples=100, noise=0.25)
+
+
+# from sklearn.datasets import make_circles
+# X, y = make_circles(n_samples=100, noise=0.25)
+# df = pd.DataFrame(dict(x=X[:,0], y=X[:,1], label=y))
+# colors = {0:'red', 1:'blue', 2:'green'}
+# fig, ax =plt.subplots()
+# grouped = df.groupby('label')
+# for key, group in grouped:
+#     group.plot(ax=ax, kind='scatter', x='x', y='y', label=key, color=colors[key])
+# plt.show()
+
+# X_train, X_predict, Y_train, Y_predict = train_test_split(
+#     X, y, test_size=0.20)
+
+# quipusClass=Quipus(knn=3,eRadius=0.5,deepNeighbors=1)
+# quipusClass.fit(X_train,Y_train)
+# quipusClass.predict(X_predict,Y_predict)
+
+# #%%
+
+# # quipusClass=Quipus(knn=5,eRadius=0.5,deepNeighbors=4)
+# # quipusClass.fit(X_train,Y_train)
+# # quipusClass.predict(X_predict,Y_predict)
+
+
+# # []
+# # IRIS knn:7 deep 1
+# #IRIS 14/16
+# # wine knn:19 deep 1
+# # red Wine:3 deep 1 0.574
+# # f=open("results.txt",'w')
+# # f.close()
+
+# grid_values = {'knn':[5],"bnn":range(1,5),"alpha":[0.25,0.5,0.75,1.0],'eRadius':[0.5]}
+# kfold = KFold(n_splits=5)
 # uruClass=Quipus()
 # clf = GridSearchCV(uruClass, param_grid = grid_values,cv=kfold,scoring = 'accuracy',n_jobs=7)
 # grid_result=clf.fit(dataset['data'],dataset['target'])
 # print("Best Estimator: ",grid_result.best_estimator_.get_params(),' Score: ',grid_result.best_score_)
 
-# f=open("results.txt",'a')
-# f.write("Best Estimator: "+str(grid_result.best_estimator_.get_params())+' Score: '+str(grid_result.best_score_)+'\n')
-# f.close()
+# # f=open("results.txt",'a')
+# # f.write("Best Estimator: "+str(grid_result.best_estimator_.get_params())+' Score: '+str(grid_result.best_score_)+'\n')
+# # f.close()
 
-# test=3
-# total=[]
-# knnTest=5
-# eRadiusTest=0.5
-# print ("knn: ",knnTest)
-# print ("e-radius: ",eRadiusTest)
-# for indexi, i in enumerate(range(test)):
-#     quipusClass=Quipus(knn=knnTest,eRadius=eRadiusTest,deepNeighbors=1)
-#     kfold = KFold(n_splits=5, random_state=indexi, shuffle=True)
-#     scores = cross_val_score(quipusClass,dataset['data'],dataset['target'],scoring="accuracy",cv=kfold)
-#     # scores = cross_val_score(quipusClass,dataset['data'],dataset['target'],scoring="accuracy", cv=5)
+# # test=3
+# # total=[]
+# # knnTest=5
+# # eRadiusTest=0.5
+# # print ("knn: ",knnTest)
+# # print ("e-radius: ",eRadiusTest)
+# # for indexi, i in enumerate(range(test)):
+# #     quipusClass=Quipus(knn=knnTest,eRadius=eRadiusTest,deepNeighbors=1)
+# #     kfold = KFold(n_splits=5, random_state=indexi, shuffle=True)
+# #     scores = cross_val_score(quipusClass,dataset['data'],dataset['target'],scoring="accuracy",cv=kfold)
+# #     # scores = cross_val_score(quipusClass,dataset['data'],dataset['target'],scoring="accuracy", cv=5)
     
-#     total.append(scores)
-#     print(scores)
-#     print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
-# total=np.array(total)
-# print("----\n->Accuracy Total: %0.4f (+/- %0.4f)" % (total.mean(), total.std() * 2))
+# #     total.append(scores)
+# #     print(scores)
+# #     print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
+# # total=np.array(total)
+# # print("----\n->Accuracy Total: %0.4f (+/- %0.4f)" % (total.mean(), total.std() * 2))
 
- # %%
+#  # %%
+
+
+# %%

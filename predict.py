@@ -83,7 +83,7 @@ def connected(g,index):
                 largest_cc=component
         subG = g.subgraph(largest_cc)
         return subG 
-def prediction(g,index,deep=1, b=8):
+def prediction(g,index, b=5,alpha=1.0,deep=1):
     index = str(index)
     classNames = g.graph["classNames"]
     result=[]
@@ -145,9 +145,9 @@ def prediction(g,index,deep=1, b=8):
         if(e==None):
             result[indexResult]=nlinks[indexResult]
 
-    # resultFinal = (result+nlinks)/2
-    # resultFinal = resultFinal/sum(resultFinal)
-    resultFinal = result
+    resultFinal = ((alpha)*result+(1-alpha)*nlinks)/2
+    resultFinal = resultFinal/sum(resultFinal)
+    # resultFinal = result
 
     # indexMin=np.argmax(resultFinal)
     # tmpLabel=g.nodes[index]["label"]

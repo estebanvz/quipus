@@ -4,7 +4,7 @@ import numpy as np
 def getProperty(g):
     bb = nx.betweenness_centrality(g)
     nx.set_node_attributes(g, bb, 'betweenness')
-def networkBuildKnn(X_net,Y_net,knn,eQuartile=0.5,labels=False, colors=["#a8201a" ,"#46acc2", "#47a64e", "#99582a", "#d81159","#e8e4e1","#e8e4e1"]):
+def networkBuildKnn(X_net,Y_net,knn,eQuartile=0.5,labels=False, colors=["#a8201a" ,"#46acc2", "#47a64e", "#99582a", "#d81159","#e8e4e1","#e8e4e1","#e8e2e1","#e8e1e1"]):
     g=nx.Graph()
     lnNet=len(X_net)
     g.graph["lnNet"]=lnNet
