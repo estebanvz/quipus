@@ -6,12 +6,19 @@ from sklearn.model_selection import train_test_split
 import drawGraph as draw
 
 
-def drawGraphs(G):
+def drawGraphs(G, title="", sizeGraph=(10, 10),labels=False):
     if isinstance(G, list):
         for i in range(len(G)):
-            draw.drawGraph(G[i])
+            draw.drawGraph(G[i], title, sizeGraph=sizeGraph,labels=labels)
     else:
-        draw.drawGraph(G)
+        draw.drawGraph(G, title, sizeGraph=sizeGraph,labels=labels)
+
+
+def drawGraphByClass(G, title=""):
+    for indexClassName, className in enumerate(G.graph["classNames"]):
+        classNodes = [e for e in G.graph["classNodes"][indexClassName]]
+        subG = G.subgraph(classNodes)
+        draw.drawGraph(subG, title, sizeGraph=(4, 4))
 
 
 def getDataFromCSV(url, className="Class"):
@@ -44,6 +51,9 @@ def normalizations(train_data, test_data, normType=4):
         (train_data, test_data) = (train_data - M) / S, (test_data - M) / S
     return train_data, test_data
 
+
 def split(X, Y):
-    return train_test_split(X, Y, test_size=0.2, train_size=0.8, random_state=123,stratify=Y)
+    return train_test_split(
+        X, Y, test_size=0.5, train_size=0.5, random_state=123, stratify=Y
+    )
 

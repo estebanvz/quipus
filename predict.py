@@ -96,9 +96,14 @@ def prediction(g, b=5, alpha=1.0):
     return resultFinal
 
 
-def quipusPrediction(G, b=5, alpha=1.0):
+def quipusPrediction(G, b=5, alpha=1.0, accepted=[]):
     tmpResults = []
-    for g in G:
+    flag =False
+    for i, g in enumerate(G):
+        if flag and not accepted == [] and not accepted[i-1]:
+            continue
+        else:
+            flag=True
         tmp = prediction(g, b, alpha)
         tmpResults.append(tmp)
     return tmpResults
